@@ -1,5 +1,5 @@
 # Savings Wallet
-For those who want to keep their funds safe but are afraid that she will lose or someone will crack her private key. Idea taken from the Ethereum Whitepaper.  
+For those who want to keep their funds safe but are afraid that she will lose or someone will crack her private key. **Idea taken from the Ethereum Whitepaper**.  
 
 # An excerpt from the Ethereum Whitepaper
 > 1. **Savings wallets**. Suppose that Alice wants to keep her funds safe, but is worried that she will lose or someone will hack her private key. She puts ether into a contract with Bob, a bank, as follows: 
