@@ -3,9 +3,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def main():
-    deploySavingWallet(accounts[0])
-
 def deploySavingWallet(_from):
     walletContract = SavingWallet.deploy({
         'from': _from,
