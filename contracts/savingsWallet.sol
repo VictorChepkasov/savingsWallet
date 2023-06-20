@@ -6,11 +6,11 @@ contract savingWallet {
         address payable owner;
         address payable partyB;
 
-        uint128 weiPerDay;
-        uint128 weiPerSecond;
-        uint128 allowance;
-        uint8 lastSendTime;
-        // uint8 rewardB награда стороны B, устанавливается по желанию owner в процентах
+        uint weiPerDay;
+        uint weiPerSecond;
+        uint allowance; //оставшееся кол-во денег
+        uint lastSendTime;
+        //uint8 rewardB награда стороны B, устанавливается по желанию owner в процентах
 
         bool partyBBad; //злонамернность стороны B
     }
@@ -23,25 +23,25 @@ contract savingWallet {
 
     //устанавливаем лимит. Возможно, перенесу код в другую функцию
     function limit() public {
-        walletInfo.weiPerDay = uint128(address(this).balance / 100);
-        walletInfo.weiPerSecond = uint128(walletInfo.weiPerDay / uint(1 days));
+        walletInfo.weiPerDay = address(this).balance / 100;
+        walletInfo.weiPerSecond = walletInfo.weiPerDay / uint(1 days);
         walletInfo.allowance = walletInfo.weiPerDay;
     }
 
     //обновление лимита, скорее всего перепишу
     function update() public {
-        walletInfo.allowance += uint8(walletInfo.weiPerSecond + (walletInfo.lastSendTime - block.timestamp));
+        walletInfo.allowance += walletInfo.weiPerSecond + (walletInfo.lastSendTime - block.timestamp);
         if (walletInfo.allowance > walletInfo.weiPerDay) {
             walletInfo.allowance = walletInfo.weiPerDay;
         }
-        walletInfo.lastSendTime = uint8(block.timestamp);
+        walletInfo.lastSendTime = block.timestamp;
     }
 
     function setWalletInfo(
         address payable _partyB
     ) public onlyOwner {
         walletInfo.partyB = _partyB;
-        walletInfo.lastSendTime = uint8(block.timestamp);
+        walletInfo.lastSendTime = block.timestamp;
         walletInfo.partyBBad = false;
     }
 
