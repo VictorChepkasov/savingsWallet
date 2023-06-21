@@ -20,28 +20,32 @@ contract SavingWallet {
         walletInfo.owner = payable(msg.sender);
     }
 
-    /*
-        Большая часть кода будет переписана. 
-        это лишь наброски того, как всё должно рбаотать
-    */
-
-    function setWalletInfo(address _partyB) public onlyOwner {
+    function setWalletInfo(address _partyB) public payable onlyOwner {
+        _withdraw(payable(address(this)), msg.value);
         walletInfo.partyB = payable(_partyB);
-        walletInfo.weiPerDay = address(this).balance / 100;
         walletInfo.partyBBad = false;
-        updateLimit();
+        walletInfo.timeLeft = 0;
+        walletInfo.weiPerDay = address(this).balance / 100;
+        allowances[msg.sender] = walletInfo.weiPerDay;
+        allowances[walletInfo.partyB] = walletInfo.weiPerDay;
     }
 
-    function withdraw(address _to, uint _value) public payable {
+    function _withdraw(address _to, uint _value) private {
         require(msg.sender != address(0), "Wrong address!");
-        allowances[msg.sender] -= msg.value;
-        walletInfo.timeLeft = block.timestamp - walletInfo.timeLeft;
         (bool sent, ) = _to.call{value: _value}("");
         require(sent, "Failed to send Ether");
     }
 
-    function updateLimit() internal {
-        require(walletInfo.timeLeft - block.timestamp <= 0, "Time hasn't run out yet");
+    function pay(address _to, uint _value) public payable setInfo {
+        require(allowances[msg.sender] > 0, "You don't have money(");
+        allowances[msg.sender] -= _value;
+        walletInfo.timeLeft = block.timestamp - walletInfo.timeLeft;
+        _withdraw(_to, _value);
+    }
+
+    function updateLimit() public {
+        require(walletInfo.timeLeft < block.timestamp , "Time has not run out yet");
+        walletInfo.weiPerDay = address(this).balance / 100;
         allowances[walletInfo.owner] = walletInfo.weiPerDay;
         allowances[walletInfo.partyB] = walletInfo.weiPerDay;
         walletInfo.timeLeft = block.timestamp;
@@ -50,7 +54,14 @@ contract SavingWallet {
     function getSavingWalletInfo() public view returns(
             WalletInfo memory, uint, uint
         ) {
-        return (walletInfo, allowances[walletInfo.owner], allowances[walletInfo.partyB]);
+        return (walletInfo,
+            allowances[walletInfo.owner],
+            allowances[walletInfo.partyB]
+        );
+    }
+
+    function getWalletBalance() public view returns(uint) {
+        return address(this).balance;
     }
 
     receive() external payable {}
@@ -58,6 +69,11 @@ contract SavingWallet {
 
     modifier onlyOwner() {
         require(msg.sender == walletInfo.owner, 'Only Owner!');
+        _;
+    }
+
+    modifier setInfo() {
+        require(walletInfo.partyB != address(0), "Info not saved!");
         _;
     }
 }

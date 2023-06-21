@@ -6,7 +6,7 @@ load_dotenv()
 def deploySavingWallet(_from):
     walletContract = SavingWallet.deploy({
         'from': _from,
-        "priority_fee": '10 wei'
+        "priority_fee": '10 gwei'
     })
     print(f'Contract deployed at {walletContract} by {_from}')
     return walletContract
