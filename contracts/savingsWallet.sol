@@ -38,7 +38,7 @@ contract SavingWallet {
 
     function pay(address _to, uint _value) public payable setInfo {
         require(allowances[msg.sender] > 0, "You don't have money(");
-        allowances[msg.sender] -= _value;
+        // allowances[msg.sender] -= _value;
         walletInfo.timeLeft = block.timestamp - walletInfo.timeLeft;
         _withdraw(_to, _value);
     }
