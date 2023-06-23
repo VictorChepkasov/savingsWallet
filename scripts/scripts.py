@@ -32,3 +32,9 @@ def getWalletBalance():
     balance = SavingWallet[-1].getWalletBalance()
     print(f'Balance contract: {balance}')
     return balance
+
+def updateWalletBalance(_deposit):
+    SavingWallet[-1].updateWalletBalance({
+        'value': _deposit,
+        'priority_fee': '10 wei'
+    })
