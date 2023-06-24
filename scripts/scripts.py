@@ -1,5 +1,17 @@
 from brownie import SavingWallet
 
+def pay(_to, _value):
+    print(f'{_to} sending Ether')
+    SavingWallet[-1].pay(_to, _value, {
+        'value': _value,
+        'priority_fee': '10 gwei'
+    })
+    print(f'{_to} send Ether')
+
+def breakTheLimit(_to, _value):
+    SavingWallet[-1].breakTheLimit(_to, _value)
+    print('Party send Ether (break limit)!')
+
 def setWalletInfo(_owner, _partyB, _deposit):
     SavingWallet[-1].setWalletInfo(_partyB, {
         'from': _owner,
@@ -8,9 +20,27 @@ def setWalletInfo(_owner, _partyB, _deposit):
     })
     print('Set saving wallet info!')
 
+def setConsentToBreakLimit(_from):
+    SavingWallet[-1].setConsentToBreakLimit({
+        'from': _from
+    })
+    print(f'{_from} consent to break the limit!')
+
+def updateWalletBalance(_deposit):
+    SavingWallet[-1].updateWalletBalance({
+        'value': _deposit,
+        'priority_fee': '10 wei'
+    })
+
 def updateLimit():
-    SavingWallet.updateLimit()
-    print('Limit updated!')
+    SavingWallet[-1].updateLimit({
+        'priority_fee': '10 wei'
+    })
+    print(f'''
+          Limit updated!
+          Owner: {getWalletInfo()[-1]}
+          Party B: {getWalletInfo()[-2]}
+          ''')
 
 def getWalletInfo():
     info = SavingWallet[-1].getSavingWalletInfo()
@@ -20,21 +50,7 @@ def getWalletInfo():
     print(f"Wallet info: {walletInfo}")
     return walletInfo
 
-def pay(_to, _value):
-    print(f'{_to} sending Ether')
-    SavingWallet[-1].pay(_to, _value, {
-        'value': _value,
-        'priority_fee': '10 gwei'
-    })
-    print(f'{_to} send Ether')
-
 def getWalletBalance():
     balance = SavingWallet[-1].getWalletBalance()
     print(f'Balance contract: {balance}')
     return balance
-
-def updateWalletBalance(_deposit):
-    SavingWallet[-1].updateWalletBalance({
-        'value': _deposit,
-        'priority_fee': '10 wei'
-    })
