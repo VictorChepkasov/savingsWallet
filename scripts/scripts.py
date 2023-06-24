@@ -1,16 +1,4 @@
-from brownie import SavingWallet, accounts
-
-def main():
-    owner = accounts[0]
-    b = accounts[1]
-    c = accounts[2]
-    contract = SavingWallet.deploy({
-        'from': owner,
-        "priority_fee": '10 gwei'
-    })
-    setWalletInfo(owner, b, 100000000)
-    pay(c, 100000)
-    getWalletBalance()
+from brownie import SavingWallet
 
 def setWalletInfo(_owner, _partyB, _deposit):
     SavingWallet[-1].setWalletInfo(_partyB, {
