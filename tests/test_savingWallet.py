@@ -3,11 +3,13 @@ from brownie import accounts
 from scripts.deploySavingWallet import deploySavingWallet
 from scripts.scripts import (
     setWalletInfo,
-    getWalletInfo,
-    getWalletBalance,
+    setConsentToBreakLimit,
     pay,
+    breakTheLimit,
     updateWalletBalance,
     updateLimit,
+    getWalletInfo,
+    getWalletBalance,
 )
 
 @pytest.fixture(autouse=True)
@@ -63,5 +65,18 @@ def test_updateWalletBalance(walletContract, deposit):
     updatedBalance = getWalletBalance()
     assert updatedBalance == validBalance
 
-def test_breakTheLimit():
-    pass
+@pytest.mark.parametrize('value', [100])
+@pytest.mark.parametrize('deposit', [1000])
+def test_breakingTheLimit(walletContract, value, deposit):
+    owner, b, _ = walletContract
+    c = accounts[2]
+    setWalletInfo(owner, b, deposit)
+    validBalance = getWalletBalance() - value
+    setConsentToBreakLimit(owner)
+    setConsentToBreakLimit(b)
+    breakTheLimit(c, value)
+    print(f'C balance: {c.balance}')
+    weiPerDay = getWalletInfo()[2]
+    newBalance = getWalletBalance()
+    assert value > weiPerDay
+    assert newBalance == validBalance

@@ -33,6 +33,10 @@ contract SavingWallet {
         consents[walletInfo.partyB] = false;
     }
 
+    function setConsentToBreakLimit() public setInfo onlyParties {
+        consents[msg.sender] = true;
+    }
+
     function pay(address _to, uint _value) public payable setInfo {
         require(allowances[msg.sender] > 0, "You don't have money(");
         allowances[msg.sender] -= _value;
@@ -41,12 +45,15 @@ contract SavingWallet {
     }
 
     function breakTheLimit(address _to, uint _value) public setInfo setConsents {
+        require(walletInfo.weiPerDay > _value, "You aren't breaking the limit!");
         _withdraw(_to, _value);
         walletInfo.weiPerDay = address(this).balance / 100;
     }
 
-    function setConsentToBreakLimit() public setInfo onlyParties {
-        consents[msg.sender] = true;
+    function updateWalletBalance() public payable onlyOwner {
+        _withdraw(payable(address(this)), msg.value);
+        walletInfo.weiPerDay = address(this).balance / 100;
+        updateLimit();
     }
 
     function updateLimit() public onlyOwner {
@@ -54,12 +61,6 @@ contract SavingWallet {
         allowances[walletInfo.owner] = walletInfo.weiPerDay;
         allowances[walletInfo.partyB] = walletInfo.weiPerDay;
         walletInfo.timeLeft = block.timestamp;
-    }
-
-    function updateWalletBalance() public payable onlyOwner {
-        _withdraw(payable(address(this)), msg.value);
-        walletInfo.weiPerDay = address(this).balance / 100;
-        updateLimit();
     }
 
     function getSavingWalletInfo() public view returns(
@@ -93,6 +94,14 @@ contract SavingWallet {
         _;
     }
 
+    modifier onlyParties() {
+        require(
+            msg.sender == walletInfo.owner || msg.sender == walletInfo.partyB,
+            "Only parties!"
+        );
+        _;
+    }
+
     modifier setInfo() {
         require(walletInfo.partyB != address(0), "Info not saved!");
         _;
@@ -102,14 +111,6 @@ contract SavingWallet {
         require(
             consents[walletInfo.owner] == consents[walletInfo.partyB] == true,
             "You need an consent!"
-        );
-        _;
-    }
-
-    modifier onlyParties() {
-        require(
-            msg.sender == walletInfo.owner || msg.sender == walletInfo.partyB,
-            "Only parties!"
         );
         _;
     }
