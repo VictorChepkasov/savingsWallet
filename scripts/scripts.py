@@ -1,32 +1,42 @@
-from brownie import SavingWallet
+from brownie import SavingWallet, accounts
+
+def main():
+    owner = accounts[0]
+    b = accounts[1]
+    c = accounts[2]
+    contract = SavingWallet.deploy({
+        'from': owner,
+        "priority_fee": '10 gwei'
+    })
+    setWalletInfo(owner, b, 100000000)
+    pay(c, 100000)
+    getWalletBalance()
 
 def setWalletInfo(_owner, _partyB, _deposit):
     SavingWallet[-1].setWalletInfo(_partyB, {
         'from': _owner,
         'value': f'{_deposit} wei',
-        'priority_fee': '10 wei'
+        'gas_price': '10 wei'
     })
     print('Set saving wallet info!')
 
 def setConsentToBreakLimit(_from):
     SavingWallet[-1].setConsentToBreakLimit({
         'from': _from,
-        'priority_fee': '10 gwei'
+        'priority_fee': '10 wei'
     })
     print(f'{_from} consent to break the limit!')
 
 def pay(_to, _value):
-    print(f'{_to} sending Ether')
+    print('Person sending Ether')
     SavingWallet[-1].pay(_to, _value, {
-        'value': _value,
-        'priority_fee': '10 gwei'
+        'priority_fee': '10 wei'
     })
-    print(f'{_to} send Ether')
+    print('Person send Ether')
 
 def breakTheLimit(_to, _value):
     SavingWallet[-1].breakTheLimit(_to, _value, {
-        'value': _value,
-        'priority_fee': '10 wei'
+        'priority_fee': '100 wei'
     })
     print('Party send Ether (break limit)!')
 
