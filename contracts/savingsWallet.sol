@@ -44,10 +44,15 @@ contract SavingWallet {
         _withdraw(_to, _value);
     }
 
-    function breakTheLimit(address _to, uint _value) public setInfo setConsents {
-        require(walletInfo.weiPerDay > _value, "You aren't breaking the limit!");
+    function breakTheLimit(address _to, uint _value) public payable setInfo setConsents onlyOwner {
+        require(_value > walletInfo.weiPerDay, "You aren't breaking the limit!"); 
         _withdraw(_to, _value);
-        walletInfo.weiPerDay = address(this).balance / 100;
+        if (address(this).balance / 100 > 0) {
+            walletInfo.weiPerDay = address(this).balance / 100;
+            allowances[walletInfo.owner] = walletInfo.weiPerDay;
+            allowances[walletInfo.partyB] = walletInfo.weiPerDay;
+            walletInfo.timeLeft = block.timestamp;
+        }
     }
 
     function updateWalletBalance() public payable onlyOwner {
