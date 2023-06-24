@@ -31,15 +31,15 @@ def test_setWalletInfo(walletContract, deposit):
     getWalletBalance()
     assert testInfo == validInfo
 
-@pytest.mark.parametrize('deposit', [
+@pytest.mark.parametrize('value', [
     pytest.param(0, marks=pytest.mark.xfail),
     pytest.param(50, marks=pytest.mark.xfail),
     100, 200000])
-def test_pay(walletContract, deposit):
+def test_pay(walletContract, value):
     owner, b, contract = walletContract
-    setWalletInfo(owner, b, deposit)
-    validInfo = getWalletInfo()[-2] - (deposit / 100)
-    pay(contract, deposit / 100)
+    setWalletInfo(owner, b, value)
+    validInfo = getWalletInfo()[-2] - (value / 100)
+    pay(contract, value / 100)
     newInfo = getWalletInfo()
     print(f'New info about Owner balance: {newInfo}')
     assert validInfo == newInfo[-2]

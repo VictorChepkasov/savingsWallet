@@ -10,7 +10,8 @@ def setWalletInfo(_owner, _partyB, _deposit):
 
 def setConsentToBreakLimit(_from):
     SavingWallet[-1].setConsentToBreakLimit({
-        'from': _from
+        'from': _from,
+        'priority_fee': '10 gwei'
     })
     print(f'{_from} consent to break the limit!')
 
@@ -23,7 +24,10 @@ def pay(_to, _value):
     print(f'{_to} send Ether')
 
 def breakTheLimit(_to, _value):
-    SavingWallet[-1].breakTheLimit(_to, _value)
+    SavingWallet[-1].breakTheLimit(_to, _value, {
+        'value': _value,
+        'priority_fee': '10 wei'
+    })
     print('Party send Ether (break limit)!')
 
 def updateWalletBalance(_deposit):
