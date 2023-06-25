@@ -6,12 +6,12 @@ contract SavingWallet {
         address payable owner;
         address payable partyB;
         uint weiPerDay; //wei на день
-        uint timeLeft; //оставшееся время до обновления лимита
+        uint timeLeft; //последний день обновления лимита
         /*uint8 rewardB награда стороны B, 
         устанавливается по желанию owner в процентах*/
         bool partyBBad; //злонамернность стороны B
-        //оставшееся кол-во денег у сторон
     }
+    //оставшееся кол-во денег у сторон
     mapping(address => uint) allowances; 
     mapping(address => bool) consents; //нельзя получить через геттеры! Лень.
 
@@ -25,7 +25,7 @@ contract SavingWallet {
         _withdraw(payable(address(this)), msg.value);
         walletInfo.partyB = payable(_partyB);
         walletInfo.partyBBad = false;
-        walletInfo.timeLeft = 0;
+        walletInfo.timeLeft = block.timestamp;
         walletInfo.weiPerDay = address(this).balance / 100;
         allowances[walletInfo.owner] = walletInfo.weiPerDay;
         allowances[walletInfo.partyB] = walletInfo.weiPerDay;
@@ -40,9 +40,7 @@ contract SavingWallet {
     function pay(address payable _to, uint _value) public payable setInfo {
         require(allowances[msg.sender] > 0, "You don't have money(");
         allowances[msg.sender] -= _value;
-        walletInfo.timeLeft = block.timestamp - walletInfo.timeLeft;
-        (bool sent, ) = _to.call{value: _value}("");
-        require(sent, "Failed to send Ether");
+        _withdraw(_to, _value);
     }
 
     function breakTheLimit(address payable _to, uint _value) public payable setInfo setConsents  {
@@ -64,7 +62,7 @@ contract SavingWallet {
     }
 
     function updateLimit() public onlyOwner {
-        require(walletInfo.timeLeft < block.timestamp , "Time has not run out yet");
+        require(walletInfo.timeLeft + uint(1 days) <= block.timestamp , "Time has not run out yet");
         allowances[walletInfo.owner] = walletInfo.weiPerDay;
         allowances[walletInfo.partyB] = walletInfo.weiPerDay;
         walletInfo.timeLeft = block.timestamp;
