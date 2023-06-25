@@ -37,7 +37,7 @@ contract SavingWallet {
         consents[msg.sender] = true;
     }
 
-    function pay(address payable _to, uint _value) public payable setInfo {
+    function pay(address payable _to, uint _value) public payable setInfo onlyParties {
         require(allowances[msg.sender] > 0, "You don't have money(");
         allowances[msg.sender] -= _value;
         _withdraw(_to, _value);
@@ -55,13 +55,20 @@ contract SavingWallet {
         }
     }
 
+    function blockPartyB() public setInfo onlyOwner {
+        walletInfo.partyBBad = true;
+        allowances[msg.sender] = 0;
+        allowances[walletInfo.partyB] = 0;
+        _withdraw(walletInfo.owner, address(this).balance);
+    }
+
     function updateWalletBalance() public payable onlyOwner {
         _withdraw(payable(address(this)), msg.value);
         walletInfo.weiPerDay = address(this).balance / 100;
         updateLimit();
     }
 
-    function updateLimit() public onlyOwner {
+    function updateLimit() public {
         require(walletInfo.timeLeft + uint(1 days) <= block.timestamp , "Time has not run out yet");
         allowances[walletInfo.owner] = walletInfo.weiPerDay;
         allowances[walletInfo.partyB] = walletInfo.weiPerDay;
@@ -81,7 +88,7 @@ contract SavingWallet {
         return address(this).balance;
     }
 
-    function _withdraw(address payable _to, uint _value) public payable {
+    function _withdraw(address payable _to, uint _value) private {
         require(msg.sender != address(0), "Wrong address!");
         (bool sent, ) = _to.call{value: _value}("");
         require(sent, "Failed to send Ether");

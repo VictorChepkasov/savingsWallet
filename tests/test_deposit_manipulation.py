@@ -4,6 +4,7 @@ from scripts.deploySavingWallet import deploySavingWallet
 from test_value_manipulation import walletContract
 from scripts.scripts import (
     setWalletInfo,
+    blockPartyB,
     updateWalletBalance,
     updateLimit,
     getWalletInfo,
@@ -21,6 +22,16 @@ def test_setWalletInfo(walletContract, deposit):
     testInfo = getWalletInfo()
     print(f'Valid: {validInfo}')
     assert validInfo == testInfo
+
+def test_blockPartyB(walletContract, deposit):
+    owner, b, _ = walletContract
+    setWalletInfo(owner, b, deposit)
+    validBalance = int(str(owner.balance())[:-8])
+    blockPartyB()
+    newInfo = getWalletInfo()[-3]
+    ownerBalance = int(str(owner.balance())[:-8])
+    assert validBalance == ownerBalance
+    assert True == newInfo
 
 def test_updateLimit(walletContract, deposit):
     owner, b, _ = walletContract
@@ -42,3 +53,4 @@ def test_updateWalletBalance(walletContract, deposit):
     updateWalletBalance(deposit)
     newBalance = getWalletBalance()
     assert validBalance == newBalance
+

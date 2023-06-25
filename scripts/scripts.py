@@ -28,6 +28,12 @@ def breakTheLimit(_to, _value):
     })
     print('Party send Ether (break limit)!')
 
+def blockPartyB():
+    SavingWallet[-1].blockPartyB({
+        'priority_fee': '10 wei'
+    })
+    print('Party B blocked!')
+
 def updateWalletBalance(_deposit):
     SavingWallet[-1].updateWalletBalance({
         'value': f'{_deposit} wei',
