@@ -18,14 +18,12 @@ def setConsentToBreakLimit(_from):
 def pay(_to, _value):
     print('Person sending Ether')
     SavingWallet[-1].pay(_to, _value, {
-        # 'value': f'{_value} wei',
         'priority_fee': '10 wei'
     })
     print('Person send Ether')
 
 def breakTheLimit(_to, _value):
     SavingWallet[-1].breakTheLimit(_to, _value, {
-        # 'value': f'{_value} wei',
         'priority_fee': '100 wei'
     })
     print('Party send Ether (break limit)!')

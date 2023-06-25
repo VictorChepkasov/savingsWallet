@@ -1,5 +1,4 @@
 import pytest
-from brownie import accounts
 from scripts.deploySavingWallet import deploySavingWallet
 from test_value_manipulation import walletContract
 from scripts.scripts import (
@@ -20,7 +19,7 @@ def test_setWalletInfo(walletContract, deposit):
     setWalletInfo(owner, b, deposit)
     testInfo = getWalletInfo()
     print(f'Valid: {validInfo}')
-    assert testInfo == validInfo
+    assert validInfo == testInfo
 
 def test_updateLimit(walletContract, deposit):
     owner, b, _ = walletContract
@@ -38,5 +37,5 @@ def test_updateWalletBalance(walletContract, deposit):
     setWalletInfo(owner, b, initialDeposit)
     validBalance = initialDeposit + deposit
     updateWalletBalance(deposit)
-    updatedBalance = getWalletBalance()
-    assert updatedBalance == validBalance
+    newBalance = getWalletBalance()
+    assert validBalance == newBalance
