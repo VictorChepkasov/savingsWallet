@@ -1,5 +1,18 @@
 from brownie import SavingWallet
 
+def getWalletInfo():
+    info = SavingWallet[-1].getSavingWalletInfo()
+    walletInfo = list(info[:-2][0])
+    walletInfo.append(info[1])
+    walletInfo.append(info[2])
+    print(f"Wallet info: {walletInfo}")
+    return walletInfo
+
+def getWalletBalance():
+    balance = SavingWallet[-1].getWalletBalance()
+    print(f'Balance contract: {balance}')
+    return balance
+
 def setWalletInfo(_owner, _partyB, _deposit):
     SavingWallet[-1].setWalletInfo(_partyB, {
         'from': _owner,
@@ -49,16 +62,3 @@ def updateLimit():
           Owner: {getWalletInfo()[-1]}
           Party B: {getWalletInfo()[-2]}
           ''')
-
-def getWalletInfo():
-    info = SavingWallet[-1].getSavingWalletInfo()
-    walletInfo = list(info[:-2][0])
-    walletInfo.append(info[1])
-    walletInfo.append(info[2])
-    print(f"Wallet info: {walletInfo}")
-    return walletInfo
-
-def getWalletBalance():
-    balance = SavingWallet[-1].getWalletBalance()
-    print(f'Balance contract: {balance}')
-    return balance

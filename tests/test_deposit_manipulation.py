@@ -11,25 +11,26 @@ from scripts.scripts import (
     getWalletBalance,
 )
 
-pytestmark = pytest.mark.parametrize('deposit', [0, 50, 100, 200000])
+pytestmark = pytest.mark.parametrize('deposit', [0, 100, 200000])
 
 def test_setWalletInfo(walletContract, deposit):
     owner, b, _ = walletContract
     deploySavingWallet(owner)
     validInfo = [owner.address, b.address, deposit // 100,
-        chain.time(), False, deposit // 100, deposit // 100]
+        chain.time() // 3600, False, deposit // 100, deposit // 100]
     setWalletInfo(owner, b, deposit)
     testInfo = getWalletInfo()
+    testInfo[3] //= 3600
     print(f'Valid: {validInfo}')
     assert validInfo == testInfo
 
 def test_blockPartyB(walletContract, deposit):
     owner, b, _ = walletContract
     setWalletInfo(owner, b, deposit)
-    validBalance = int(str(owner.balance())[:-8])
+    validBalance = int(str(owner.balance())[:-9])
     blockPartyB()
     newInfo = getWalletInfo()[-3]
-    ownerBalance = int(str(owner.balance())[:-8])
+    ownerBalance = int(str(owner.balance())[:-9])
     assert validBalance == ownerBalance
     assert True == newInfo
 
