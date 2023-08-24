@@ -48,8 +48,13 @@ contract SavingWallet {
         _;
     }
 
+    constructor() {}
 
-    constructor(address _partyB, uint id) payable {
+    receive() external payable {}
+    fallback() external payable {}
+
+    // функция вместо конструктора, т.к. мы используем createClone
+    function init(address _partyB, uint id) external payable {
         require(
             _partyB != msg.sender,
             "Party B and Owner must be different people!"
@@ -66,9 +71,6 @@ contract SavingWallet {
         consents[walletInfo.owner] = false;
         consents[walletInfo.partyB] = false;
     }
-
-    receive() external payable {}
-    fallback() external payable {}
 
     function getSavingWalletInfo() external view returns(WalletInfo memory, uint, uint) {
         return (walletInfo,
