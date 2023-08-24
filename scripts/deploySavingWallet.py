@@ -1,12 +1,12 @@
-from brownie import SavingWallet, accounts
+from brownie import WalletsFactory
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def deploySavingWallet(_from):
-    walletContract = SavingWallet.deploy({
+def deployFactory(_from):
+    deployed = WalletsFactory.deploy({
         'from': _from,
-        "priority_fee": '10 gwei'
+        'priority_fee': '10 wei'
     })
-    print(f'Contract deployed at {walletContract} by {_from}')
-    return walletContract
+    print(f'Wallets factory deployed successful!')
+    return deployed

@@ -5,6 +5,7 @@ contract SavingWallet {
     struct WalletInfo {
         address payable owner;
         address payable partyB;
+        uint id;
         uint weiPerDay; //wei на день
         uint timeLeft; //последний день обновления лимита
         /*uint8 rewardB награда стороны B, 
@@ -16,86 +17,6 @@ contract SavingWallet {
     mapping(address => bool) consents; //нельзя получить через геттеры! Лень.
 
     WalletInfo private walletInfo;
-
-    constructor() {
-        walletInfo.owner = payable(msg.sender);
-    }
-
-    function setWalletInfo(address _partyB) public payable onlyOwner {
-        _withdraw(payable(address(this)), msg.value);
-        walletInfo.partyB = payable(_partyB);
-        walletInfo.partyBBad = false;
-        walletInfo.timeLeft = block.timestamp;
-        walletInfo.weiPerDay = address(this).balance / 100;
-        allowances[walletInfo.owner] = walletInfo.weiPerDay;
-        allowances[walletInfo.partyB] = walletInfo.weiPerDay;
-        consents[walletInfo.owner] = false;
-        consents[walletInfo.partyB] = false;
-    }
-
-    function setConsentToBreakLimit() public setInfo onlyParties {
-        consents[msg.sender] = true;
-    }
-
-    function pay(address payable _to, uint _value) public payable setInfo onlyParties {
-        require(allowances[msg.sender] > 0, "You don't have money(");
-        allowances[msg.sender] -= _value;
-        _withdraw(_to, _value);
-    }
-
-    function breakTheLimit(address payable _to, uint _value) public payable setInfo setConsents  {
-        require(_value > walletInfo.weiPerDay, "You aren't breaking the limit!"); 
-        _withdraw(payable(_to), _value);
-
-        if (address(this).balance / 100 > 0) {
-            walletInfo.weiPerDay = address(this).balance / 100;
-            allowances[walletInfo.owner] = walletInfo.weiPerDay;
-            allowances[walletInfo.partyB] = walletInfo.weiPerDay;
-            walletInfo.timeLeft = block.timestamp;
-        }
-    }
-
-    function blockPartyB() public setInfo onlyOwner {
-        walletInfo.partyBBad = true;
-        allowances[msg.sender] = 0;
-        allowances[walletInfo.partyB] = 0;
-        _withdraw(walletInfo.owner, address(this).balance);
-    }
-
-    function updateWalletBalance() public payable onlyOwner {
-        _withdraw(payable(address(this)), msg.value);
-        walletInfo.weiPerDay = address(this).balance / 100;
-        updateLimit();
-    }
-
-    function updateLimit() public {
-        require(walletInfo.timeLeft + uint(1 days) <= block.timestamp , "Time has not run out yet");
-        allowances[walletInfo.owner] = walletInfo.weiPerDay;
-        allowances[walletInfo.partyB] = walletInfo.weiPerDay;
-        walletInfo.timeLeft = block.timestamp;
-    }
-
-    function getSavingWalletInfo() public view returns(
-            WalletInfo memory, uint, uint
-        ) {
-        return (walletInfo,
-            allowances[walletInfo.owner],
-            allowances[walletInfo.partyB]
-        );
-    }
-
-    function getWalletBalance() public view returns(uint) {
-        return address(this).balance;
-    }
-
-    function _withdraw(address payable _to, uint _value) private {
-        require(msg.sender != address(0), "Wrong address!");
-        (bool sent, ) = _to.call{value: _value}("");
-        require(sent, "Failed to send Ether");
-    }
-
-    receive() external payable {}
-    fallback() external payable {}
 
     modifier onlyOwner() {
         require(msg.sender == walletInfo.owner, 'Only Owner!');
@@ -125,5 +46,88 @@ contract SavingWallet {
             "You need an consent!"
         );
         _;
+    }
+
+
+    constructor(address _partyB, uint id) payable {
+        require(
+            _partyB != msg.sender,
+            "Party B and Owner must be different people!"
+        );
+        walletInfo.owner = payable(msg.sender);
+        _withdraw(payable(address(this)), msg.value);
+        walletInfo.partyB = payable(_partyB);
+        walletInfo.id = id;
+        walletInfo.partyBBad = false;
+        walletInfo.timeLeft = block.timestamp;
+        walletInfo.weiPerDay = address(this).balance / 100;
+        allowances[walletInfo.owner] = walletInfo.weiPerDay;
+        allowances[walletInfo.partyB] = walletInfo.weiPerDay;
+        consents[walletInfo.owner] = false;
+        consents[walletInfo.partyB] = false;
+    }
+
+    receive() external payable {}
+    fallback() external payable {}
+
+    function getSavingWalletInfo() external view returns(WalletInfo memory, uint, uint) {
+        return (walletInfo,
+            allowances[walletInfo.owner],
+            allowances[walletInfo.partyB]
+        );
+    }
+
+    function getWalletBalance() external view returns(uint) {
+        return address(this).balance;
+    }
+
+    function pay(address payable _to, uint _value) public payable setInfo onlyParties {
+        require(allowances[msg.sender] > 0, "You don't have money(");
+        allowances[msg.sender] -= _value;
+        _withdraw(_to, _value);
+    }
+
+    function breakTheLimit(address payable _to, uint _value) public payable setInfo setConsents  {
+        require(_value > walletInfo.weiPerDay, "You aren't breaking the limit!"); 
+        _withdraw(payable(_to), _value);
+
+        if (address(this).balance / 100 > 0) {
+            walletInfo.weiPerDay = address(this).balance / 100;
+            allowances[walletInfo.owner] = walletInfo.weiPerDay;
+            allowances[walletInfo.partyB] = walletInfo.weiPerDay;
+            walletInfo.timeLeft = block.timestamp;
+        }
+    }
+
+    function setConsentToBreakLimit() public setInfo onlyParties {
+        consents[msg.sender] = true;
+    }
+
+    function blockPartyB() public setInfo onlyOwner {
+        walletInfo.partyBBad = true;
+        allowances[msg.sender] = 0;
+        allowances[walletInfo.partyB] = 0;
+        _withdraw(walletInfo.owner, address(this).balance);
+    }
+
+    function updateWalletBalance() public payable onlyOwner {
+        _withdraw(payable(address(this)), msg.value);
+        walletInfo.weiPerDay = address(this).balance / 100;
+        updateLimit();
+    }
+
+    function updateLimit() public {
+        require(
+            walletInfo.timeLeft + uint(1 days) <= block.timestamp,"Time has not run out yet"
+        );
+        allowances[walletInfo.owner] = walletInfo.weiPerDay;
+        allowances[walletInfo.partyB] = walletInfo.weiPerDay;
+        walletInfo.timeLeft = block.timestamp;
+    }
+
+    function _withdraw(address payable _to, uint _value) private {
+        require(msg.sender != address(0), "Wrong address!");
+        (bool sent, ) = _to.call{value: _value}("");
+        require(sent, "Failed to send Ether");
     }
 }

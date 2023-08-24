@@ -1,60 +1,38 @@
-from brownie import SavingWallet
+from brownie import SavingWallet, WalletsFactory
 
-def getWalletInfo():
-    info = SavingWallet[-1].getSavingWalletInfo()
+def getSavigWallet(walletId):
+    savingWallet = WalletsFactory[-1].getSavingWallet(walletId)
+    print(f'Saving wallet info: {savingWallet}')
+    return SavingWallet.at(savingWallet)
+
+def getSavigWallets(startId, endId):
+    walletsArr = []
+    for i in range(startId, endId+1):
+        savingWallet = WalletsFactory[-1].getSavingWallet(i)
+        walletsArr.append(savingWallet)
+    return walletsArr
+
+def getWalletInfo(wallet):
+    info = wallet.getSavingWalletInfo()
     walletInfo = list(info[:-2][0])
     walletInfo.append(info[1])
     walletInfo.append(info[2])
     print(f"Wallet info: {walletInfo}")
     return walletInfo
 
-def getWalletBalance():
-    balance = SavingWallet[-1].getWalletBalance()
+def getWalletBalance(wallet):
+    balance = wallet.getWalletBalance()
     print(f'Balance contract: {balance}')
     return balance
 
-def setWalletInfo(_owner, _partyB, _deposit):
-    SavingWallet[-1].setWalletInfo(_partyB, {
-        'from': _owner,
-        'value': f'{_deposit} wei',
-        'gas_price': '10 wei'
-    })
-    print('Set saving wallet info!')
-
-def setConsentToBreakLimit(_from):
-    SavingWallet[-1].setConsentToBreakLimit({
-        'from': _from,
-        'priority_fee': '10 wei'
-    })
-    print(f'{_from} consent to break the limit!')
-
-def pay(_to, _value):
-    print('Person sending Ether')
-    SavingWallet[-1].pay(_to, _value, {
-        'priority_fee': '10 wei'
-    })
-    print('Person send Ether')
-
-def breakTheLimit(_to, _value):
-    SavingWallet[-1].breakTheLimit(_to, _value, {
-        'priority_fee': '100 wei'
-    })
-    print('Party send Ether (break limit)!')
-
-def blockPartyB():
-    SavingWallet[-1].blockPartyB({
-        'priority_fee': '10 wei'
-    })
-    print('Party B blocked!')
-
-def updateWalletBalance(_deposit):
-    SavingWallet[-1].updateWalletBalance({
+def updateWalletBalance(_deposit, wallet):
+    wallet.updateWalletBalance({
         'value': f'{_deposit} wei',
         'priority_fee': '10 wei'
     })
 
-def updateLimit():
-    SavingWallet[-1].updateLimit({
+def updateLimit(wallet):
+    wallet.updateLimit({
         'priority_fee': '10 wei'
     })
     print(f'''
@@ -62,3 +40,36 @@ def updateLimit():
           Owner: {getWalletInfo()[-1]}
           Party B: {getWalletInfo()[-2]}
           ''')
+    
+def setConsentToBreakLimit(_from, wallet):
+    wallet.setConsentToBreakLimit({
+        'from': _from,
+        'priority_fee': '10 wei'
+    })
+    print(f'{_from} consent to break the limit!')
+
+def createWallet(_from, partyB, wallet):
+    wallet.createWallet(partyB, {
+        'from': _from,
+        'priority_fee': '10 wei'
+    })
+    print('Saving wallet created!')
+
+def pay(_to, _value, wallet):
+    print('Person sending Ether')
+    wallet.pay(_to, _value, {
+        'priority_fee': '10 wei'
+    })
+    print('Person send Ether')
+
+def breakTheLimit(_to, _value, wallet):
+    wallet.breakTheLimit(_to, _value, {
+        'priority_fee': '100 wei'
+    })
+    print('Party send Ether (break limit)!')
+
+def blockPartyB(wallet):
+    wallet.blockPartyB({
+        'priority_fee': '10 wei'
+    })
+    print('Party B blocked!')
