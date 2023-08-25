@@ -10,22 +10,22 @@ from scripts.scripts import (
     getWalletBalance,
 )
 
-pytestmark = pytest.mark.parametrize('deposit', [0, 100, 200000])
+pytestmark = pytest.mark.parametrize('amount', [0, 100, 200000])
 
-def test_setWalletInfo(walletContract, deposit):
+def test_setWalletInfo(walletContract, amount):
     owner, b, _ = walletContract
     deploySavingWallet(owner)
-    validInfo = [owner.address, b.address, deposit // 100,
-        chain.time() // 3600, False, deposit // 100, deposit // 100]
-    setWalletInfo(owner, b, deposit)
+    validInfo = [owner.address, b.address, amount // 100,
+        chain.time() // 3600, False, amount // 100, amount // 100]
+    setWalletInfo(owner, b, amount)
     testInfo = getWalletInfo()
     testInfo[3] //= 3600
     print(f'Valid: {validInfo}')
     assert validInfo == testInfo
 
-def test_blockPartyB(walletContract, deposit):
+def test_blockPartyB(walletContract, amount):
     owner, b, _ = walletContract
-    setWalletInfo(owner, b, deposit)
+    setWalletInfo(owner, b, amount)
     validBalance = int(str(owner.balance())[:-9])
     blockPartyB()
     newInfo = getWalletInfo()[-3]
@@ -33,9 +33,9 @@ def test_blockPartyB(walletContract, deposit):
     assert validBalance == ownerBalance
     assert True == newInfo
 
-def test_updateLimit(walletContract, deposit):
+def test_updateLimit(walletContract, amount):
     owner, b, _ = walletContract
-    setWalletInfo(owner, b, deposit)
+    setWalletInfo(owner, b, amount)
     validInfo = getWalletInfo()
     validInfo = [validInfo[-1], validInfo[-2]]
     chain.sleep(86401)
@@ -44,13 +44,13 @@ def test_updateLimit(walletContract, deposit):
     newInfo = [newInfo[-1], newInfo[-2]]
     assert validInfo == newInfo
 
-def test_updateWalletBalance(walletContract, deposit):
+def test_updateWalletBalance(walletContract, amount):
     owner, b, _ = walletContract
-    initialDeposit = 500
-    setWalletInfo(owner, b, initialDeposit)
-    validBalance = initialDeposit + deposit
+    initialamount = 500
+    setWalletInfo(owner, b, initialamount)
+    validBalance = initialamount + amount
     chain.sleep(86401)
-    updateWalletBalance(deposit)
+    updateWalletBalance(amount)
     newBalance = getWalletBalance()
     assert validBalance == newBalance
 

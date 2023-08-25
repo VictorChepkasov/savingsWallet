@@ -13,6 +13,23 @@ from scripts.scripts import (
     getWalletBalance
 )
 
+def setEnvironment(_WETHFactory, _walletsFactory, _amount):
+    owner, b, walletsFactory = _walletsFactory
+    c = accounts[2]
+    # получаю контаркт WETH
+    weth = WrappedETH.at(_WETHFactory.token())
+
+    # оборачиваю эфир
+    buyWETH(owner, _WETHFactory.address, _amount)
+    
+    # разрешаю фабрике кошельков тратить n токенов владельца кошелька
+    approve(owner, walletsFactory.address, _amount)
+    createWallet(_WETHFactory.token(), owner, b, _amount)
+    ownerBalance = weth.balanceOf(owner)
+    walletContract = getSavingWallet(walletsFactory.walletsCounter())
+
+    return owner, b, c, walletsFactory, weth, walletContract, ownerBalance
+
 @pytest.mark.parametrize(
     'amount', [
         pytest.param(0, marks=pytest.mark.xfail),
@@ -21,17 +38,8 @@ from scripts.scripts import (
     ]
 )
 def test_pay(WETHFactory, walletsFactory, amount):
-    owner, b, walletsFactory = walletsFactory
-    c = accounts[2]
-    weth = WrappedETH.at(WETHFactory.token())
-
-    buyWETH(owner, WETHFactory.address, amount*100)
-
-    approve(owner, walletsFactory.address, amount*100)
-    createWallet(WETHFactory.token(), owner, b, amount*100)
-    ownerBalance = weth.balanceOf(owner)
+    owner, _, c, walletsFactory, weth, walletContract, ownerBalance = setEnvironment(WETHFactory, walletsFactory, amount*100)
     
-    walletContract = getSavingWallet(walletsFactory.walletsCounter())
     validInfo = getWalletInfo(owner, walletContract)
     validBalance = getWalletBalance(walletContract)
 
@@ -49,19 +57,11 @@ def test_pay(WETHFactory, walletsFactory, amount):
     (200, 1000), (20000, 100000)]
 )
 def test_breakingTheLimit(WETHFactory, walletsFactory, value, amount):
-    owner, b, walletsFactory = walletsFactory
-    c = accounts[2]
-    weth = WrappedETH.at(WETHFactory.token())
+    owner, b, c, walletsFactory, weth, walletContract, ownerBalance = setEnvironment(WETHFactory, walletsFactory, amount)
 
-    buyWETH(owner, WETHFactory.address, amount)
-
-    approve(owner, walletsFactory.address, amount)
-    createWallet(WETHFactory.token(), owner, b, amount)
-
-    walletContract = getSavingWallet(walletsFactory.walletsCounter())
     validBalance = getWalletBalance(walletContract) - value
-    ownerBalance = weth.balanceOf(owner)
 
+    # стороны соглашаются потратить больше обозначенной суммы
     setConsentToBreakLimit(owner, walletContract)
     setConsentToBreakLimit(b, walletContract)
     
