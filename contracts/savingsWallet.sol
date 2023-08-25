@@ -114,7 +114,7 @@ contract SavingWallet {
             updateLimit();
         }
         allowances[msg.sender] -= _amount;
-        WETH.transferFrom(msg.sender, _to, _amount);
+        WETH.transfer(_to, _amount);
     }
 
     function breakTheLimit(address _to, uint _amount) public setConsents {

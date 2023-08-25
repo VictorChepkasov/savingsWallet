@@ -13,48 +13,34 @@ from scripts.scripts import (
     getWalletBalance
 )
 
-def test_pay(WETHFactory, walletsFactory, amount=1000, walletId=1):
+@pytest.mark.parametrize(
+    'amount', [
+        pytest.param(0, marks=pytest.mark.xfail),
+        1000,
+        2000000
+    ]
+)
+def test_pay(WETHFactory, walletsFactory, amount):
     owner, b, factory = walletsFactory
     c = accounts[2]
+    weth = WrappedETH.at(WETHFactory.token())
 
-    buyWETH(owner, WETHFactory.address, amount*2)
+    buyWETH(owner, WETHFactory.address, amount*100)
 
-    approve(owner, factory.address, amount)
-    createWallet(WETHFactory.token(), owner, b, amount)
+    approve(owner, factory.address, amount*100)
+    createWallet(WETHFactory.token(), owner, b, amount*100)
+    ownerBalance = weth.balanceOf(owner)
     
-    walletContract = getSavingWallet(walletId)
+    walletContract = getSavingWallet(factory.walletsCounter())
     validInfo = getWalletInfo(owner, walletContract)
     validBalance = getWalletBalance(walletContract)
 
-    # owner.transfer(walletContract.address, '1000 gwei', priority_fee='10 wei')
-    approve(owner, walletContract.address, 200)
-    print(f'Owner balance: {WrappedETH.at(WETHFactory.token()).balanceOf(owner)}')
+    owner.transfer(walletContract.address, '1000 gwei', priority_fee='10 wei')
+    pay(owner, c, amount, walletContract)
 
-    walletContract.pay(c, 5, {
-        'from': owner,
-        'priority_fee': '10 wei'
-    })
-
-    assert getWalletInfo(owner, walletContract)[-2] == validInfo[-2]-amount//100
-    assert getWalletBalance(walletContract) == validBalance-amount//100
-
-# @pytest.mark.parametrize(
-#     'value', [pytest.param(0, marks=pytest.mark.xfail),
-#     pytest.param(50, marks=pytest.mark.xfail),
-#     1000, 2000000]
-# )
-# def test_pay_old(walletsFactory, value=1000, walletId=1):
-#     owner, b, _ = walletsFactory
-#     c = accounts[2]
-#     createWallet(owner, b, value)
-#     walletContract = getSavingWallet(walletId)
-#     validInfo = getWalletInfo(walletContract)
-#     validBalance = getWalletBalance(walletContract)
-#     print(f'Info about Owner wei: {validInfo[-2]}')
-#     value /= 100
-#     pay(owner, c, value, walletContract)
-#     assert getWalletInfo(walletContract)[-2] == validInfo[-2] - value
-#     assert getWalletBalance(walletContract) == validBalance - value
+    assert getWalletInfo(owner, walletContract)[-2] == validInfo[-2] - amount
+    assert getWalletBalance(walletContract) == validBalance - amount
+    assert ownerBalance == weth.balanceOf(owner)
 
 # @pytest.mark.parametrize(
 #     'value, deposit', 
