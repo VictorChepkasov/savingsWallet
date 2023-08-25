@@ -1,7 +1,6 @@
 import pytest
 from brownie import chain
 from scripts.deploySavingWallet import deploySavingWallet
-from test_value_manipulation import walletContract
 from scripts.scripts import (
     setWalletInfo,
     blockPartyB,

@@ -1,8 +1,7 @@
 from brownie import SavingWallet, WalletsFactory
 
-def getSavigWallet(walletId):
+def getSavingWallet(walletId):
     savingWallet = WalletsFactory[-1].getSavingWallet(walletId)
-    print(f'Saving wallet info: {savingWallet}')
     return SavingWallet.at(savingWallet)
 
 def getSavigWallets(startId, endId):
@@ -48,16 +47,19 @@ def setConsentToBreakLimit(_from, wallet):
     })
     print(f'{_from} consent to break the limit!')
 
-def createWallet(_from, partyB, wallet):
-    wallet.createWallet(partyB, {
+def createWallet(_from, partyB, value):
+    WalletsFactory[-1].createWallet(_from, partyB, {
         'from': _from,
+        'value': f"{value} wei",
         'priority_fee': '10 wei'
     })
     print('Saving wallet created!')
 
-def pay(_to, _value, wallet):
+def pay(_from, _to, _value, wallet):
     print('Person sending Ether')
-    wallet.pay(_to, _value, {
+    wallet.pay(_to, {
+        'from': _from,
+        'value': _value,
         'priority_fee': '10 wei'
     })
     print('Person send Ether')

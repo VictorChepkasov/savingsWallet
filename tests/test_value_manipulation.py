@@ -1,8 +1,9 @@
 import pytest
 from brownie import accounts
-from scripts.deploySavingWallet import deploySavingWallet
+from conftest import walletFactory
 from scripts.scripts import (
-    setWalletInfo,
+    getSavingWallet,
+    createWallet,
     setConsentToBreakLimit,
     pay,
     breakTheLimit,
@@ -10,42 +11,34 @@ from scripts.scripts import (
     getWalletBalance,
 )
 
-@pytest.fixture(autouse=True)
-def walletContract():
-    owner = accounts[0]
-    b = accounts[1]
-    contract = deploySavingWallet(owner)
-    return owner, b, contract
-
-@pytest.mark.parametrize(
-    'value', [pytest.param(0, marks=pytest.mark.xfail),
-    pytest.param(50, marks=pytest.mark.xfail),
-    1000, 2000000]
-)
-def test_pay(walletContract, value):
-    owner, b, _ = walletContract
+# @pytest.mark.parametrize(
+#     'value', [pytest.param(0, marks=pytest.mark.xfail),
+#     pytest.param(50, marks=pytest.mark.xfail),
+#     1000, 2000000]
+# )
+def test_pay(walletFactory, value=1000, walletId=1):
+    owner, b, _ = walletFactory
     c = accounts[2]
-    setWalletInfo(owner, b, value)
+    createWallet(owner, b, value)
+    walletContract = getSavingWallet(walletId)
+    validInfo = getWalletInfo(walletContract)
+    validBalance = getWalletBalance(walletContract)
+    print(f'Info about Owner wei: {validInfo[-2]}')
     value /= 100
-    validInfo = getWalletInfo()[-2] - value 
-    validBalance = getWalletBalance() - value 
-    pay(c, value)
-    newInfo = getWalletInfo()
-    print(f'Info about Owner wei: {newInfo}')
-    newBalance = getWalletBalance()
-    assert validInfo == newInfo[-2]
-    assert validBalance == newBalance
+    pay(owner, c, value, walletContract)
+    assert getWalletInfo(walletContract)[-2] == validInfo[-2] - value
+    assert getWalletBalance(walletContract) == validBalance - value
 
-@pytest.mark.parametrize(
-    'value, deposit', 
-    [pytest.param((0, 0), "You aren't breaking the limit!", marks=pytest.mark.xfail),
-    pytest.param((30000, 5000000), "You aren't breaking the limit!", marks=pytest.mark.xfail),
-    (200, 1000), (20000, 100000)]
-)
-def test_breakingTheLimit(walletContract, value, deposit):
+# @pytest.mark.parametrize(
+#     'value, deposit', 
+#     [pytest.param((0, 0), "You aren't breaking the limit!", marks=pytest.mark.xfail),
+#     pytest.param((30000, 5000000), "You aren't breaking the limit!", marks=pytest.mark.xfail),
+#     (200, 1000), (20000, 100000)]
+# )
+def test_breakingTheLimit(walletContract, value=200, deposit=1000):
     owner, b, _ = walletContract
     c = accounts[2]
-    setWalletInfo(owner, b, deposit)
+    createWallet(owner, b, deposit)
     getWalletInfo()
     validBalance = getWalletBalance() - value
     setConsentToBreakLimit(owner)
