@@ -1,18 +1,21 @@
-from brownie import SavingWallet, WalletsFactory
+from brownie import SavingWallet, WalletsFactory, WETHFactory, WrappedETH
 
-def getSavingWallet(walletId):
-    savingWallet = WalletsFactory[-1].getSavingWallet(walletId)
+def getSavingWallet(_walletId):
+    savingWallet = WalletsFactory[-1].getSavingWallet(_walletId)
     return SavingWallet.at(savingWallet)
 
-def getSavigWallets(startId, endId):
+def getSavigWallets(_startId, _endId):
     walletsArr = []
-    for i in range(startId, endId+1):
+    for i in range(_startId, _endId+1):
         savingWallet = WalletsFactory[-1].getSavingWallet(i)
         walletsArr.append(savingWallet)
     return walletsArr
 
-def getWalletInfo(wallet):
-    info = wallet.getSavingWalletInfo()
+def getWalletInfo(_from, wallet):
+    info = wallet.getSavingWalletInfo({
+        'from': _from,
+        'priority_fee': '10 wei'
+    })
     walletInfo = list(info[:-2][0])
     walletInfo.append(info[1])
     walletInfo.append(info[2])
@@ -24,21 +27,11 @@ def getWalletBalance(wallet):
     print(f'Balance contract: {balance}')
     return balance
 
-def updateWalletBalance(_deposit, wallet):
-    wallet.updateWalletBalance({
-        'value': f'{_deposit} wei',
+def updateWalletBalance(_from, _amount, wallet):
+    wallet.updateWalletBalance(_amount, {
+        'from': _from,
         'priority_fee': '10 wei'
     })
-
-def updateLimit(wallet):
-    wallet.updateLimit({
-        'priority_fee': '10 wei'
-    })
-    print(f'''
-          Limit updated!
-          Owner: {getWalletInfo()[-1]}
-          Party B: {getWalletInfo()[-2]}
-          ''')
     
 def setConsentToBreakLimit(_from, wallet):
     wallet.setConsentToBreakLimit({
@@ -47,26 +40,24 @@ def setConsentToBreakLimit(_from, wallet):
     })
     print(f'{_from} consent to break the limit!')
 
-def createWallet(_from, partyB, value):
-    WalletsFactory[-1].createWallet(_from, partyB, {
+def createWallet(_weth, _from, _partyB, _amount):
+    WalletsFactory[-1].createWallet(_weth, _from, _partyB, _amount, {
         'from': _from,
-        'value': f"{value} wei",
         'priority_fee': '10 wei'
     })
     print('Saving wallet created!')
 
-def pay(_from, _to, _value, wallet):
-    print('Person sending Ether')
-    wallet.pay(_to, {
+def pay(_from, _to, _amount, wallet):
+    print('Person sending tokens')
+    wallet.pay(_to, _amount, {
         'from': _from,
-        'value': _value,
         'priority_fee': '10 wei'
     })
-    print('Person send Ether')
+    print('Person send tokens')
 
-def breakTheLimit(_to, _value, wallet):
-    wallet.breakTheLimit(_to, _value, {
-        'priority_fee': '100 wei'
+def breakTheLimit(_to, _amount, wallet):
+    wallet.breakTheLimit(_to, _amount, {
+        'priority_fee': '10 wei'
     })
     print('Party send Ether (break limit)!')
 
@@ -75,3 +66,12 @@ def blockPartyB(wallet):
         'priority_fee': '10 wei'
     })
     print('Party B blocked!')
+
+def approve(_from, _spenderAddress, _amount):
+    WrappedETH.at(WETHFactory[-1].token()).approve(_spenderAddress, _amount, {
+        'from': _from,
+        'priority_fee': '10 wei'
+    })
+
+def buyWETH(_from, _tokenAddress, _amountToBuy):
+    _from.transfer(_tokenAddress, f'{_amountToBuy} wei', priority_fee='10 wei')

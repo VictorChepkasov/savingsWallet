@@ -55,13 +55,12 @@ contract SavingWallet {
         ERC20 _WETH,
         address _owner,
         address _partyB,
-        uint _amount,
         uint _id
     ) 
         external 
     {
         require(
-            _partyB != msg.sender,
+            _partyB != _owner,
             "Party B and Owner must be different people!"
         );
         require(_partyB != address(0), "Incorrect party B address!");
@@ -70,11 +69,6 @@ contract SavingWallet {
 
         walletInfo.owner = _owner;
         walletInfo.partyB = _partyB;
-
-        require(
-            WETH.transferFrom(msg.sender, address(this), _amount), 
-            "Transfer unsuccessful!"
-        );
 
         walletInfo.id = _id;
         walletInfo.partyBBad = false;
@@ -110,7 +104,7 @@ contract SavingWallet {
         walletInfo.timeLeft = block.timestamp;
     }
 
-    function pay(address payable _to, uint _amount) public onlyParties {
+    function pay(address _to, uint _amount) public onlyParties {
         require(allowances[msg.sender] > 0, "You don't have money(");
         require(
             _amount <= walletInfo.weiPerDay && _amount <= allowances[msg.sender],

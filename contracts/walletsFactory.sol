@@ -54,9 +54,12 @@ contract WalletsFactory is CloneFactory {
     )
         public
     {
-        SavingWallet savingWallet = SavingWallet(payable(createClone(masterContract)));
+        SavingWallet savingWallet = SavingWallet(
+            payable(createClone(masterContract))
+        );
+        _weth.transferFrom(msg.sender, address(savingWallet), _amount);
         walletsCounter += 1;
-        savingWallet.init(_weth, _owner, _partyB, _amount, walletsCounter);
+        savingWallet.init(_weth, _owner, _partyB, walletsCounter);
         savingWallets[walletsCounter] = savingWallet;
     }
 }
