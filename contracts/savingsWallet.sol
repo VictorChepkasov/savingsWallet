@@ -126,7 +126,7 @@ contract SavingWallet {
             WETH.balanceOf(address(this)) >= _amount,
             "You don't have money("
         );
-        WETH.transferFrom(address(this), _to, _amount);
+        WETH.transfer(_to, _amount);
         if (WETH.balanceOf(address(this)) / 100 > 0) {
             walletInfo.weiPerDay = WETH.balanceOf(address(this)) / 100;
             allowances[walletInfo.owner] = walletInfo.weiPerDay;
@@ -139,11 +139,7 @@ contract SavingWallet {
         walletInfo.partyBBad = true;
         allowances[msg.sender] = 0;
         allowances[walletInfo.partyB] = 0;
-        WETH.transferFrom(
-            address(this),
-            walletInfo.owner,
-            WETH.balanceOf(address(this))
-        );
+        WETH.transfer(walletInfo.owner, WETH.balanceOf(address(this)));
     }
 
     function updateLimit() public {

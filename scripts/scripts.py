@@ -55,8 +55,9 @@ def pay(_from, _to, _amount, wallet):
     })
     print('Person send tokens')
 
-def breakTheLimit(_to, _amount, wallet):
+def breakTheLimit(_from, _to, _amount, wallet):
     wallet.breakTheLimit(_to, _amount, {
+        'from': _from,
         'priority_fee': '10 wei'
     })
     print('Party send Ether (break limit)!')

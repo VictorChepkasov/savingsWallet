@@ -21,17 +21,17 @@ from scripts.scripts import (
     ]
 )
 def test_pay(WETHFactory, walletsFactory, amount):
-    owner, b, factory = walletsFactory
+    owner, b, walletsFactory = walletsFactory
     c = accounts[2]
     weth = WrappedETH.at(WETHFactory.token())
 
     buyWETH(owner, WETHFactory.address, amount*100)
 
-    approve(owner, factory.address, amount*100)
+    approve(owner, walletsFactory.address, amount*100)
     createWallet(WETHFactory.token(), owner, b, amount*100)
     ownerBalance = weth.balanceOf(owner)
     
-    walletContract = getSavingWallet(factory.walletsCounter())
+    walletContract = getSavingWallet(walletsFactory.walletsCounter())
     validInfo = getWalletInfo(owner, walletContract)
     validBalance = getWalletBalance(walletContract)
 
@@ -42,22 +42,32 @@ def test_pay(WETHFactory, walletsFactory, amount):
     assert getWalletBalance(walletContract) == validBalance - amount
     assert ownerBalance == weth.balanceOf(owner)
 
-# @pytest.mark.parametrize(
-#     'value, deposit', 
-#     [pytest.param((0, 0), "You aren't breaking the limit!", marks=pytest.mark.xfail),
-#     pytest.param((30000, 5000000), "You aren't breaking the limit!", marks=pytest.mark.xfail),
-#     (200, 1000), (20000, 100000)]
-# )
-# def test_breakingTheLimit(walletContract, value=200, deposit=1000):
-#     owner, b, _ = walletContract
-#     c = accounts[2]
-#     createWallet(owner, b, deposit)
-#     getWalletInfo()
-#     validBalance = getWalletBalance() - value
-#     setConsentToBreakLimit(owner)
-#     setConsentToBreakLimit(b)
-#     breakTheLimit(c, value)
-#     weiPerDay = getWalletInfo()[2]
-#     newBalance = getWalletBalance()
-#     assert value > weiPerDay
-#     assert validBalance == newBalance
+@pytest.mark.parametrize(
+    'value, amount', 
+    [pytest.param((0, 0), "You aren't breaking the limit!", marks=pytest.mark.xfail),
+    pytest.param((30000, 5000000), "You aren't breaking the limit!", marks=pytest.mark.xfail),
+    (200, 1000), (20000, 100000)]
+)
+def test_breakingTheLimit(WETHFactory, walletsFactory, value, amount):
+    owner, b, walletsFactory = walletsFactory
+    c = accounts[2]
+    weth = WrappedETH.at(WETHFactory.token())
+
+    buyWETH(owner, WETHFactory.address, amount)
+
+    approve(owner, walletsFactory.address, amount)
+    createWallet(WETHFactory.token(), owner, b, amount)
+
+    walletContract = getSavingWallet(walletsFactory.walletsCounter())
+    validBalance = getWalletBalance(walletContract) - value
+    ownerBalance = weth.balanceOf(owner)
+
+    setConsentToBreakLimit(owner, walletContract)
+    setConsentToBreakLimit(b, walletContract)
+    
+    breakTheLimit(owner, c, value, walletContract)
+    weiPerDay = getWalletInfo(owner, walletContract)[2]
+
+    assert value > weiPerDay
+    assert validBalance == getWalletBalance(walletContract)
+    assert ownerBalance == weth.balanceOf(owner)
