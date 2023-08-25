@@ -46,10 +46,17 @@ contract WalletsFactory is CloneFactory {
         return savingWallets[walletId];
     }
 
-    function createWallet(address _partyB) public {
+    function createWallet(
+        ERC20 _weth,
+        address _owner,
+        address _partyB,
+        uint amount
+    )
+        public
+    {
         SavingWallet savingWallet = SavingWallet(payable(createClone(masterContract)));
         walletsCounter += 1;
-        savingWallet.init(_partyB, walletsCounter);
+        savingWallet.init(_weth, _owner, _partyB, amount, walletsCounter);
         savingWallets[walletsCounter] = savingWallet;
     }
 }
