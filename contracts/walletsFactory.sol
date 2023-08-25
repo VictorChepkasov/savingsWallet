@@ -42,21 +42,21 @@ contract WalletsFactory is CloneFactory {
         masterContract = _masterContract;
     }
 
-    function getSavingWallet(uint walletId) external view returns(SavingWallet) {
-        return savingWallets[walletId];
+    function getSavingWallet(uint _walletId) external view returns(SavingWallet) {
+        return savingWallets[_walletId];
     }
 
     function createWallet(
         ERC20 _weth,
         address _owner,
         address _partyB,
-        uint amount
+        uint _amount
     )
         public
     {
         SavingWallet savingWallet = SavingWallet(payable(createClone(masterContract)));
         walletsCounter += 1;
-        savingWallet.init(_weth, _owner, _partyB, amount, walletsCounter);
+        savingWallet.init(_weth, _owner, _partyB, _amount, walletsCounter);
         savingWallets[walletsCounter] = savingWallet;
     }
 }

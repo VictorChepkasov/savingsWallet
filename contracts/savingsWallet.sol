@@ -123,7 +123,7 @@ contract SavingWallet {
         WETH.transferFrom(msg.sender, _to, _amount);
     }
 
-    function breakTheLimit(address payable _to, uint _amount) public setConsents {
+    function breakTheLimit(address _to, uint _amount) public setConsents {
         require(
             _amount > walletInfo.weiPerDay,
             "You aren't breaking the limit!"
