@@ -1,9 +1,8 @@
 import pytest
 from brownie import accounts, WrappedETH
-from conftest import walletsFactory, WETHFactory
+from conftest import *
 from scripts.scripts import (
     approve,
-    pay,
     buyWETH,
     createWallet,
     setConsentToBreakLimit,
@@ -29,26 +28,6 @@ def setEnvironment(_WETHFactory, _walletsFactory, _amount):
     walletContract = getSavingWallet(walletsFactory.walletsCounter())
 
     return owner, b, c, walletsFactory, weth, walletContract, ownerBalance
-
-@pytest.mark.parametrize(
-    'amount', [
-        pytest.param(0, marks=pytest.mark.xfail),
-        1000,
-        2000000
-    ]
-)
-def test_pay(WETHFactory, walletsFactory, amount):
-    owner, _, c, walletsFactory, weth, walletContract, ownerBalance = setEnvironment(WETHFactory, walletsFactory, amount*100)
-    
-    validInfo = getWalletInfo(owner, walletContract)
-    validBalance = getWalletBalance(walletContract)
-
-    owner.transfer(walletContract.address, '1000 gwei', priority_fee='10 wei')
-    pay(owner, c, amount, walletContract)
-
-    assert getWalletInfo(owner, walletContract)[-2] == validInfo[-2] - amount
-    assert getWalletBalance(walletContract) == validBalance - amount
-    assert ownerBalance == weth.balanceOf(owner)
 
 @pytest.mark.parametrize(
     'value, amount', 

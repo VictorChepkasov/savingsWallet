@@ -32,6 +32,12 @@ def updateWalletBalance(_from, _amount, wallet):
         'from': _from,
         'priority_fee': '10 wei'
     })
+
+def updateLimit(_from, wallet):
+    wallet.updateLimit({
+        'from': _from,
+        'priority_fee': '10 wei'
+    })
     
 def setConsentToBreakLimit(_from, wallet):
     wallet.setConsentToBreakLimit({
@@ -62,8 +68,9 @@ def breakTheLimit(_from, _to, _amount, wallet):
     })
     print('Party send Ether (break limit)!')
 
-def blockPartyB(wallet):
+def blockPartyB(_from, wallet):
     wallet.blockPartyB({
+        'from': _from,
         'priority_fee': '10 wei'
     })
     print('Party B blocked!')
