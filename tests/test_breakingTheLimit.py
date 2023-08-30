@@ -1,16 +1,13 @@
 import pytest
 from brownie import accounts, WrappedETH
 from conftest import *
-from scripts.scripts import (
+from scripts.savingsWalletFactoryScripts import (
+    getSavingWallet,
     approve,
     buyWETH,
-    createWallet,
-    setConsentToBreakLimit,
-    breakTheLimit,
-    getSavingWallet,
-    getWalletInfo,
-    getWalletBalance
+    createWallet
 )
+from scripts.savingsWalletClass import *
 
 def setEnvironment(_WETHFactory, _walletsFactory, _amount):
     owner, b, walletsFactory = _walletsFactory
@@ -23,11 +20,11 @@ def setEnvironment(_WETHFactory, _walletsFactory, _amount):
     
     # разрешаю фабрике кошельков тратить n токенов владельца кошелька
     approve(owner, walletsFactory.address, _amount)
-    createWallet(_WETHFactory.token(), owner, b, _amount)
+    walletId = createWallet(_WETHFactory.token(), owner, b, _amount)
+    wallet = SavingsWallet(getSavingWallet(owner, walletId))
     ownerBalance = weth.balanceOf(owner)
-    walletContract = getSavingWallet(walletsFactory.walletsCounter())
 
-    return owner, b, c, walletsFactory, weth, walletContract, ownerBalance
+    return owner, b, c, walletsFactory, weth, wallet, ownerBalance
 
 @pytest.mark.parametrize(
     'value, amount', 
@@ -36,17 +33,17 @@ def setEnvironment(_WETHFactory, _walletsFactory, _amount):
     (200, 1000), (20000, 100000)]
 )
 def test_breakingTheLimit(WETHFactory, walletsFactory, value, amount):
-    owner, b, c, walletsFactory, weth, walletContract, ownerBalance = setEnvironment(WETHFactory, walletsFactory, amount)
+    owner, b, c, walletsFactory, weth, wallet, ownerBalance = setEnvironment(WETHFactory, walletsFactory, amount)
 
-    validBalance = getWalletBalance(walletContract) - value
+    validBalance = wallet.getWalletBalance() - value
 
     # стороны соглашаются потратить больше обозначенной суммы
-    setConsentToBreakLimit(owner, walletContract)
-    setConsentToBreakLimit(b, walletContract)
+    wallet.setConsentToBreakLimit(owner)
+    wallet.setConsentToBreakLimit(b)
     
-    breakTheLimit(owner, c, value, walletContract)
-    weiPerDay = getWalletInfo(owner, walletContract)[2]
+    wallet.breakTheLimit(c, value)
+    weiPerDay = wallet.getWalletInfo()[2]
 
     assert value > weiPerDay
-    assert validBalance == getWalletBalance(walletContract)
+    assert validBalance == wallet.getWalletBalance()
     assert ownerBalance == weth.balanceOf(owner)

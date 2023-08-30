@@ -80,7 +80,7 @@ contract SavingWallet {
         consents[walletInfo.partyB] = false;
     }
 
-    function getSavingWalletInfo() external view onlyParties returns(WalletInfo memory, uint, uint) {
+    function getSavingWalletInfo() external view returns(WalletInfo memory, uint, uint) {
         return (
             walletInfo,
             allowances[walletInfo.owner],
