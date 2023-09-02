@@ -1,10 +1,11 @@
-from brownie import SavingWallet, WalletsFactory, accounts
+from brownie import SavingWallet, WalletsFactory, accounts, network
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def main():
-    deployFactory(accounts[0])
+    account = accounts[0] if network.show_active() == 'development' else accounts.load('victor')
+    deployFactory(account)
 
 def deployFactory(_from):
     masterContract = SavingWallet.deploy({

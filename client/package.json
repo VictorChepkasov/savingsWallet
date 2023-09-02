@@ -1,0 +1,23 @@
+{
+  "name": "victor",
+  "version": "1.0.0",
+  "description": "Frontend for dapp",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VictorChepkasov/savingsWallet.git"
+  },
+  "author": "victor chepkasov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/VictorChepkasov/savingsWallet/issues"
+  },
+  "homepage": "https://github.com/VictorChepkasov/savingsWallet#readme",
+  "devDependencies": {
+    "ethers": "^6.7.1"
+  }
+}
