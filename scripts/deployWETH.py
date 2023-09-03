@@ -1,7 +1,7 @@
 from brownie import accounts, WETHFactory
 
 def main():
-    deployWETH(accounts[0])
+    deployWETH(accounts.load('victor'))
 
 def deployWETH(_from):
     deployed = WETHFactory.deploy({
