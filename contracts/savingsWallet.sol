@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./WETH.sol";
 
-contract SavingWallet {
+contract SavingWallet is ReentrancyGuard {
     using SafeERC20 for ERC20;
 
     struct WalletInfo {
@@ -16,10 +17,9 @@ contract SavingWallet {
         устанавливается по желанию owner в процентах*/
         bool partyBBad; //злонамернность стороны B
     }
-    //оставшееся кол-во денег у сторон
-    mapping(address => uint) allowances; 
-    //нельзя получить через геттеры! Лень.
-    mapping(address => bool) consents;
+    
+    mapping(address => uint) allowances; //оставшееся кол-во денег у сторон
+    mapping(address => bool) consents; //нельзя получить через геттеры! Лень.
 
     ERC20 public WETH;
     WalletInfo public walletInfo;
@@ -96,7 +96,7 @@ contract SavingWallet {
         consents[msg.sender] = true;
     }
 
-    function updateWalletBalance(uint _amount) external onlyOwner {
+    function updateWalletBalance(uint _amount) external onlyOwner nonReentrant {
         WETH.transferFrom(msg.sender, address(this), _amount);
         walletInfo.weiPerDay = WETH.balanceOf(address(this)) / 100;
         allowances[walletInfo.owner] = walletInfo.weiPerDay;
@@ -104,7 +104,7 @@ contract SavingWallet {
         walletInfo.timeLeft = block.timestamp;
     }
 
-    function pay(address _to, uint _amount) public onlyParties {
+    function pay(address _to, uint _amount) public onlyParties nonReentrant {
         require(allowances[msg.sender] > 0, "You don't have money(");
         require(
             _amount <= walletInfo.weiPerDay && _amount <= allowances[msg.sender],
@@ -117,7 +117,7 @@ contract SavingWallet {
         WETH.transfer(_to, _amount);
     }
 
-    function breakTheLimit(address _to, uint _amount) public setConsents {
+    function breakTheLimit(address _to, uint _amount) public setConsents nonReentrant {
         require(
             _amount > walletInfo.weiPerDay,
             "You aren't breaking the limit!"
