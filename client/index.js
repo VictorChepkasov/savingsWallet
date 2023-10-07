@@ -23,7 +23,7 @@ createSavingWallet.onclick = async (event) => {
     try {
         await walletsFactory.connect(signer)
         console.log(walletsFactory)
-        await walletsFactory.createWallet(wethFactoryAddress, signer, partyB, amount);
+        await walletsFactory.createWallet(wethFactoryAddress, signer.address, partyB, amount);
     } catch (error) {
         await console.log("Saving wallet not create!", error);
     }
@@ -35,7 +35,7 @@ connect.onclick = async () => {
         const conectedAccount = await window.ethereum.request({method: "eth_requestAccounts"});
         connect.innerHTML = "Connected";
         const activeChainId = await window.ethereum.request({ method: 'eth_chainId' });
-        accountMetamsk.innerHTML = `Chain Id: ${activeChainId} <br/> Account: ${conectedAccount}`;
+        accountMetamsk.innerHTML = `Chain Id: ${activeChainId} <br/> Account: ${conectedAccount[0]}`;
     } catch (error) {
         console.log("Couldn't get a wallet connection", error);
     }
