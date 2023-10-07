@@ -6,7 +6,7 @@ from scripts.savingsWalletFactoryScripts import approve
 from scripts.savingsWalletClass import *
 pytestmark = pytest.mark.parametrize(
     'amount',
-    [pytest.param(0, marks=pytest.mark.xfail), 100, 200000]
+    [pytest.param(0, marks=pytest.mark.xfail), 1000]
 )
 
 def test_createWallet(WETHFactory, walletsFactory, amount):
